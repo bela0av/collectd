@@ -743,6 +743,12 @@ notify_nagios_la_SOURCES = notify_nagios.c
 notify_nagios_la_LDFLAGS = $(PLUGIN_LDFLAGS)
 endif
 
+if BUILD_PLUGIN_NOTIFY_REMOTE_SYSLOG
+pkglib_LTLIBRARIES += notify_remote_syslog.la
+notify_remote_syslog_la_SOURCES = notify_remote_syslog.c
+notify_remote_syslog_la_LDFLAGS = $(PLUGIN_LDFLAGS)
+endif
+
 if BUILD_PLUGIN_NTPD
 pkglib_LTLIBRARIES += ntpd.la
 ntpd_la_SOURCES = ntpd.c
