@@ -48,15 +48,9 @@ static int rsyslog_config(oconfig_item_t *ci) {
 				return (-1);
 		} else
 			WARNING(
-				"notify_remote_syslog plugin: Ignoring unknown config option \"%s\".",
+					"notify_remote_syslog plugin: Ignoring unknown config option \"%s\".",
 					child->key);
-	}
-	DEBUG ("notify_remote_syslog plugin: Host: %s",syslog_host);
-	DEBUG ("notify_remote_syslog plugin: Port: %d",syslog_port);
-	DEBUG ("notify_remote_syslog plugin: Facility: %d",syslog_facility);
-	DEBUG ("notify_remote_syslog plugin: Severity: %d",syslog_severity);
-	DEBUG ("notify_remote_syslog plugin: NotifyLevel: %d",notif_severity);
-	DEBUG ("notify_remote_syslog plugin: OverrideSeverity: %d",override_severity);
+	} DEBUG ("notify_remote_syslog plugin: Host: %s",syslog_host); DEBUG ("notify_remote_syslog plugin: Port: %d",syslog_port); DEBUG ("notify_remote_syslog plugin: Facility: %d",syslog_facility); DEBUG ("notify_remote_syslog plugin: Severity: %d",syslog_severity); DEBUG ("notify_remote_syslog plugin: NotifyLevel: %d",notif_severity); DEBUG ("notify_remote_syslog plugin: OverrideSeverity: %d",override_severity);
 	return 0;
 }
 
@@ -110,24 +104,31 @@ static int rsyslog_write_socket(char *pLogMessage) {
 }
 
 char *replace(const char *s, char ch, const char *repl) {
-    int count = 0;
-    const char *t;
-    for(t=s; *t; t++)
-        count += (*t == ch);
+	int count = 0;
+	const char *t;
+	for (t = s; *t; t++)
+		count += (*t == ch);
 
-    size_t rlen = strlen(repl);
-    char *res = malloc(strlen(s) + (rlen-1)*count + 1);
-    char *ptr = res;
-    for(t=s; *t; t++) {
-        if(*t == ch) {
-            memcpy(ptr, repl, rlen);
-            ptr += rlen;
-        } else {
-            *ptr++ = *t;
-        }
-    }
-    *ptr = 0;
-    return res;
+	size_t rlen = strlen(repl);
+	char *res = malloc(strlen(s) + (rlen - 1) * count + 1);
+	char *ptr = res;
+	for (t = s; *t; t++) {
+		if (*t == ch) {
+			memcpy(ptr, repl, rlen);
+			ptr += rlen;
+		} else {
+			*ptr++ = *t;
+		}
+	}
+	*ptr = 0;
+	return res;
+}
+
+const char *coalesce(const char *s) {
+	if (s && !s[0]) {
+		s = "UNDEF";
+	}
+	return s;
 }
 
 static int rsyslog_notify(const notification_t *n, user_data_t *ud) {
@@ -138,7 +139,7 @@ static int rsyslog_notify(const notification_t *n, user_data_t *ud) {
 	time_t t;
 	t = time(NULL);
 	utc_time = gmtime(&t);
-	strftime (time_buf,sizeof(time_buf),"%FT%T",utc_time);
+	strftime(time_buf, sizeof(time_buf), "%FT%T", utc_time);
 	DEBUG ("UTC time and date: %s", time_buf);
 
 	char buf[1024] = "";
@@ -173,11 +174,10 @@ static int rsyslog_notify(const notification_t *n, user_data_t *ud) {
 
 	ssnprintf(buf, sizeof(buf), "<%i>1 %s %s %s %s %s %s %s %s Message: %s\n",
 			syslog_priority, time_buf, n->host, "COLLECTD", severity_string,
-			replace(n->plugin, ' ', "_"),
-			replace(n->plugin_instance, ' ', "_"),
-			replace(n->type, ' ', "_"),
-			replace(n->type_instance, ' ', "_"),
-			n->message);
+			coalesce(replace(n->plugin, ' ', "_")),
+			coalesce(replace(n->plugin_instance, ' ', "_")),
+			coalesce(replace(n->type, ' ', "_")),
+			coalesce(replace(n->type_instance, ' ', "_")), n->message);
 
 	DEBUG ("notify_remote_syslog plugin: %s",buf);
 
