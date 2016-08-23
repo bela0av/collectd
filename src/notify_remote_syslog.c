@@ -171,8 +171,8 @@ static int rsyslog_notify(const notification_t *n, user_data_t *ud) {
 
 	int syslog_priority = syslog_facility * 8 + syslog_severity;
 
-	ssnprintf(buf, sizeof(buf), "<%i>1 %s %s %s %s %s %s %s Message: %s\n",
-			syslog_priority, time_buf, n->host, severity_string,
+	ssnprintf(buf, sizeof(buf), "<%i>1 %s %s %s %s %s %s %s %s Message: %s\n",
+			syslog_priority, time_buf, n->host, "COLLECTD", severity_string,
 			replace(n->plugin, ' ', "_"),
 			replace(n->plugin_instance, ' ', "_"),
 			replace(n->type, ' ', "_"),
